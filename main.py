@@ -65,26 +65,37 @@ def get_post(id: int):
     cursor = conn.cursor()
     try:
      cursor.execute(''' SELECT * FROM posts WHERE id = %s ''', (id,))
-     cursor.fetchone()
+     specific_post = cursor.fetchone()
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code= status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f'ERROR FOUND: {e}')
+    return {"data": specific_post}
 
 #Delete Operation 
-@app.delete("/posts/{id}")
+@app.delete("/posts/{id}", status_code= status.HTTP_204_NO_CONTENT)
 def deletepost(id: int):
-    index = find_index(id)
-    if index is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f'Post with id: {id} doesnt found')
-    my_posts.pop(index)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(''' DELETE FROM posts WHERE id = %s ''', (id,))
+        deleted_count = cursor.rowcount
+        if deleted_count == 0:
+            conn.rollback()
+            raise HTTPException (status_code= status.HTTP_404_NOT_FOUND, detail= f'Post wil {id} is not found')
+        conn.commit()
+        return Response (status_code= status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException (status_code= status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f'Error found: {e}')    
 
 @app.put("/posts/{id}")
 def update_post(id: int, updated_post: Post):
-    index = find_index(id)
-    if index is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f'Post with id: {id} doesnt found')
-    updated_post_dict = updated_post.model_dump()
-    updated_post_dict['id']=id
-    my_posts[index] = updated_post_dict
-    return {"data": updated_post_dict}
+    cursor = conn.cursor()
+    try:
+      cursor.execute('''UPDATE posts SET title= %s, content = %s WHERE id = %s RETURNING *''', (updated_post. title,updated_post.content, id))
+      conn.commit()
+      post_updated=cursor.fetchone()
+      return {"data": post_updated} 
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code= status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f'Error found: {e}') 
+    
