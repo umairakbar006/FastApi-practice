@@ -62,8 +62,13 @@ def createposts(new_post: Post):
 
 @app.get("/posts/{id}")
 def get_post(id: int):
-    post = find_post(id)
-    return {"detail of post" : post}
+    cursor = conn.cursor()
+    try:
+     cursor.execute(''' SELECT * FROM posts WHERE id = %s ''', (id,))
+     cursor.fetchone()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code= status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f'ERROR FOUND: {e}')
 
 #Delete Operation 
 @app.delete("/posts/{id}")
