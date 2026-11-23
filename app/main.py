@@ -34,6 +34,8 @@ def get_posts():
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code= status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f'Error found: {e}')
+    finally: 
+        conn.close()
         
 
 @app.post("/post")
