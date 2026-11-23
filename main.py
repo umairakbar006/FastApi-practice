@@ -19,20 +19,7 @@ while True:
         break
     except Exception as error:
         print ('Connectin to database failed', error)
-        time.sleep(3)
-
-my_posts = [{"title": "titile of post 1", "content": "content of post 1", "id" :1}, {"title": "Fav food", "content": "I like eating shawarma", "id": 2}]
-
-def find_post (id):
-    for p in my_posts:
-        if p ['id'] == id:
-            return p
-
-def find_index (id: int):
-    for i, p  in enumerate (my_posts):
-        if p['id']== id:
-            return i 
-    return None       
+        time.sleep(3)  
 
 @app.get("/")
 def read_root():
