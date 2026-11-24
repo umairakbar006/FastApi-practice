@@ -49,7 +49,7 @@ def get_posts():
     finally: 
         conn.close()
         
-
+# New Post
 @app.post("/post")
 def createposts(new_post: Post):
     try:
